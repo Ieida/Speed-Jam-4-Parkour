@@ -3,6 +3,10 @@ extends Camera3D
 @export var sensitivity: float = 0.1
 var x: float
 var y: float
+var tp: Vector3
+
+func _ready():
+	tp = position
 
 func _input(event):
 	if event is InputEventMouseMotion:
@@ -10,9 +14,9 @@ func _input(event):
 		look_y(-event.relative.x * sensitivity)
 
 func _process(delta):
-	basis = Basis()
-	rotate_x(deg_to_rad(x))
-	rotate_y(deg_to_rad(y))
+	$"..".basis = Basis()
+	$"..".rotate_x(deg_to_rad(x))
+	$"..".rotate_y(deg_to_rad(y))
 
 func look_x(degrees: float):
 	x += degrees

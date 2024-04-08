@@ -1,0 +1,68 @@
+[gd_scene load_steps=5 format=3 uid="uid://b7hc7n624lenc"]
+
+[sub_resource type="GDScript" id="GDScript_ecppp"]
+resource_name = "body"
+script/source = "extends Node3D
+
+@export var movement_speed: float = 4.0
+@export var navigation_agent: NavigationAgent3D
+var movement_delta: float
+var target: Node3D
+
+func _ready():
+	navigation_agent.velocity_computed.connect(Callable(_on_velocity_computed))
+	target = get_tree().get_first_node_in_group(\"player_body\")
+	while true:
+		set_movement_target(target.global_position)
+		await get_tree().create_timer(3).timeout
+
+func set_movement_target(movement_target: Vector3):
+	navigation_agent.set_target_position(movement_target)
+
+func _physics_process(delta):
+	if navigation_agent.is_navigation_finished():
+		return
+
+	movement_delta = movement_speed * delta
+	var next_path_position: Vector3 = navigation_agent.get_next_path_position()
+	var new_velocity: Vector3 = global_position.direction_to(next_path_position) * movement_delta
+	if navigation_agent.avoidance_enabled:
+		navigation_agent.set_velocity(new_velocity)
+	else:
+		_on_velocity_computed(new_velocity)
+
+func _on_velocity_computed(safe_velocity: Vector3) -> void:
+	global_position = global_position.move_toward(global_position + safe_velocity, movement_delta)
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hqu7k"]
+shading_mode = 0
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_e7w4e"]
+material = SubResource("StandardMaterial3D_hqu7k")
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_uu1cs"]
+
+[node name="Enemy" type="Node3D"]
+
+[node name="Marker3D" type="Marker3D" parent="."]
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_desired_distance = 1.5
+target_desired_distance = 1.5
+path_height_offset = -0.5
+
+[node name="Body" type="Node3D" parent="." node_paths=PackedStringArray("navigation_agent")]
+script = SubResource("GDScript_ecppp")
+navigation_agent = NodePath("../NavigationAgent3D")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Body"]
+mesh = SubResource("CapsuleMesh_e7w4e")
+skeleton = NodePath("../..")
+
+[node name="Hitbox" type="Area3D" parent="Body"]
+monitoring = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Body/Hitbox"]
+shape = SubResource("CapsuleShape3D_uu1cs")

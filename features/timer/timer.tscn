@@ -1,0 +1,87 @@
+[gd_scene load_steps=4 format=3 uid="uid://ciycko2qltjlg"]
+
+[sub_resource type="GDScript" id="GDScript_3an16"]
+resource_name = "timer"
+script/source = "extends HBoxContainer
+
+var time_elapsed: float
+@export var label: Label
+@export var event_label: Label
+
+func _process(delta):
+	time_elapsed += delta
+	var min = time_elapsed / 60
+	var sec = fmod(time_elapsed, 60)
+	label.text = \"%02d:%02d\" % [min, sec]
+
+func add_time(amt: float):
+	time_elapsed += amt
+	event_label.display(amt)
+
+func subtract_time(amt: float):
+	time_elapsed -= amt
+	event_label.display(-amt)
+"
+
+[sub_resource type="LabelSettings" id="LabelSettings_6rqik"]
+font_size = 64
+
+[sub_resource type="GDScript" id="GDScript_3p2t5"]
+resource_name = "event_label"
+script/source = "extends Label
+
+var is_displaying: bool
+var elapsed_time: float
+@export var display_duration: float = 1
+var amount: float
+
+func _ready():
+	hide()
+
+func _process(delta):
+	if is_displaying:
+		elapsed_time += delta
+		if elapsed_time >= display_duration:
+			is_displaying = false
+			hide()
+			amount = 0
+
+func display(amt: float):
+	if is_zero_approx(amt): return
+	is_displaying = true
+	elapsed_time = 0
+	amount += amt
+	if is_zero_approx(amount):
+		is_displaying = false
+		elapsed_time = display_duration + 1.0
+		hide()
+		return
+	var c = Color.GREEN
+	if amt > 0: c = Color.RED
+	label_settings.font_color = c
+	var min = amount / 60
+	var sec = fmod(amount, 60)
+	text = \"%02d:%02d\" % [min, sec]
+	show()
+"
+
+[node name="Timer" type="HBoxContainer" node_paths=PackedStringArray("label", "event_label") groups=["timer"]]
+offset_right = 40.0
+offset_bottom = 40.0
+script = SubResource("GDScript_3an16")
+label = NodePath("Label")
+event_label = NodePath("Event")
+
+[node name="Event" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "MM:SS"
+label_settings = SubResource("LabelSettings_6rqik")
+horizontal_alignment = 1
+script = SubResource("GDScript_3p2t5")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "MM:SS"
+horizontal_alignment = 1

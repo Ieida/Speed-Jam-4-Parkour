@@ -3,6 +3,5 @@
 [ext_resource type="Script" path="res://entities/player/camera/camera.gd" id="1_2oud6"]
 
 [node name="Camera3D" type="Camera3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 fov = 60.0
 script = ExtResource("1_2oud6")

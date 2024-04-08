@@ -1,6 +1,6 @@
 extends CharacterBody3D
 
-@onready var camera: Camera3D = $Camera3D
+@export var camera: Camera3D
 @export var move_force: float = 20
 @export var max_speed: float = 4
 @export var jump_force: float = 4
@@ -38,6 +38,14 @@ func _physics_process(delta):
 		nv.y = velocity.y
 		velocity = nv
 	move_and_slide()
+
+func disable_collision_shapes():
+	$CollisionShape3D.disabled = true
+	$CollisionShape3D2.disabled = true
+
+func enable_collision_shapes():
+	$CollisionShape3D.disabled = false
+	$CollisionShape3D2.disabled = false
 
 func add_velocity(amount: Vector3, max: float):
 	var dot = amount.normalized().dot(velocity.normalized())
